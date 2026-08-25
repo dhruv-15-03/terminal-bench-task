@@ -14,7 +14,7 @@ Python 3.12.9 (host), python:3.13-slim-bookworm (both container images)
 ```
 
 Validated against `harbor-framework/terminal-bench-3` at commit
-`45e819259a95fb10e43dcebcc11b73140ace3b32` (2026-08-22).
+`405a783ea111ab855718ce93b2b0cadaa2e8d47f` (2026-08-25).
 
 ## What TB3 actually requires
 
@@ -45,8 +45,14 @@ rather than from memory. The points that shaped this task:
 - `[agent]` and `[verifier]` timeouts are capped at 18000 seconds.
 - `category` is a closed set of seven domains; this task is `Software` /
   `Languages`.
-- Ten metadata fields are mandatory, including `difficulty_explanation`,
-  `solution_explanation`, `verification_explanation` and `relevant_experience`.
+- Six metadata fields are mandatory in `task.toml`: `author_name`,
+  `author_email`, `category`, `subcategory`, `tags` and
+  `expert_time_estimate_hours`. As of upstream `405a783` the four
+  reviewer-facing explanations moved out of `task.toml` into a per-task
+  `README.md`, which must carry `## Difficulty explanation`,
+  `## Solution explanation`, `## Verification explanation` and
+  `## Relevant experience` as exact level-two headings. CONTRIBUTING asks for
+  one to three sentences each.
 
 The `/run` and `/cheat` defaults come from `.github/harbor-run-defaults.yml`,
 which is the source of truth the workflows read:
@@ -203,7 +209,7 @@ not be run. Self-assessment against the 20 criteria in
 |---|---|
 | verifiable | Pure function of the artifact; no clocks, network or randomness. Oracle reproduced 1.0 on repeat runs; suite completes in ~1.2s. |
 | solvable | Oracle scores 1.0 on all 69 modules. |
-| difficult | A conjunction of independent exact requirements; see `difficulty_explanation` in `task.toml`. |
+| difficult | A conjunction of independent exact requirements; see the difficulty explanation in the task `README.md`. |
 | interesting | Bytecode safety verifiers are production software (JVM, WASM validation, eBPF). |
 | outcome_verified | Only the verdict per module is graded; no step, file layout or method is prescribed. |
 | anti_cheat_robustness | Separate verifier container, unprivileged execution, unreadable corpus, all-or-nothing reward; six probes above. |

@@ -23,6 +23,7 @@ hard as accepting one it calls unsafe.
 ```
 tasks/bytecode-verifier/
   instruction.md            what the agent is told
+  README.md                 reviewer-facing metadata and explanations
   task.toml                 config and metadata
   environment/
     Dockerfile              agent container
