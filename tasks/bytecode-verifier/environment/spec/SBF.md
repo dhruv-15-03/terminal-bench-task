@@ -151,6 +151,14 @@ sub(a, b):
     mu    = chi | a.mask | b.mask
     return (dv & ~mu, mu)
 
+mul(a, b):
+    # No bit-level precision is claimed for multiplication. The one case that
+    # survives is a product of two fully known values, and that is recovered by
+    # 5.3 step 1 rather than by any reasoning here.
+    if a.mask == 0 and b.mask == 0:
+        return (a.value * b.value, 0)       # wrapping, modulo 2^64
+    return (0, ~0)
+
 shl(a, n):
     return (a.value << n, a.mask << n)
 
@@ -408,8 +416,38 @@ The store is only reachable through both guards. The taken edge of the first
 `r0.smin = 0`, so the address is provably in `[0, 4088]` no matter how
 imprecise the loop header's state has become. The module verifies `OK`.
 
-Deleting the second guard changes the verdict. Widening releases `r0.smax` at
-round 8, `addi r0, 8` then overflows and releases `r0.smin` too, and the store
-becomes `ERR E_OOB_STORE <pc of the store>`. An implementation that skips
-widening altogether would instead grind out the exact bound after a few hundred
-rounds and wrongly answer `OK`.
+What carries that proof is the first guard. Every path into `chk` arrives on its
+taken edge, so `r0.smax = 4088` is re-established on entry every time round.
+Widening does engage on this module — the loop runs long enough to reach round 8
+— but it only releases bounds that are still moving in the loop header, and the
+guard re-derives the store's bound downstream of that. The second guard fences
+`r0` from below; deleting it leaves the module `OK`, because the address bound
+never depended on it.
+
+Move the guard after the store and the verdict changes:
+
+```
+     movi r0, 0
+     movi r2, 4089
+loop:
+     movi r1, 1
+     store r0, r1, 0
+     addi r0, 8
+     jlt r0, r2, loop
+     halt
+```
+
+This loop is bottom-tested, so the store is no longer dominated by a refining
+edge: control reaches it from the loop header, and the header's `r0` is the join
+of the initial `0` with the incremented value coming back along the back edge.
+Nothing bounds that join from above. `r0.smax` climbs one iteration per round
+until widening releases it at round 8, and the store becomes
+`ERR E_OOB_STORE 3`.
+
+The contrast is the point. In the first program a comparison stands between the
+loop header and the store, so the analysis re-derives the bound on every entry.
+In the second the comparison is downstream of the store and can say nothing
+about it. An implementation that omits widening does not merely lose precision
+on the second program, it answers differently: it grinds the bound upward one
+iteration at a time until the loop happens to terminate, then wrongly reports
+`OK`.
