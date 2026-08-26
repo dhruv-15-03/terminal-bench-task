@@ -61,9 +61,27 @@ harbor run -p tasks/bytecode-verifier --agent nop      # expects reward 0.0
 ## Results
 
 [docs/RESULTS.md](docs/RESULTS.md) has the commands actually run, their output,
-and the failure analysis. Static checks, Docker build, oracle and nop
-validation all pass. The `/run` and `/cheat` agent trials are outstanding and
-are marked as such. No trial number in this repository is estimated or invented.
+and the failure analysis.
+
+| stage | result |
+|---|---|
+| static checks (22) | pass |
+| Docker build, both images | pass |
+| oracle validation | reward 1.0 |
+| nop validation | reward 0.0 |
+| anti-cheat probes | 6/6 score 0 |
+| `/run` agent trials | not yet run |
+| `/cheat` agent trials | not yet run |
+| implementation rubric | not yet run |
+
+Validated against `harbor-framework/terminal-bench-3` at
+`c9ffbe1`, with harbor 0.22.0.
+
+The three outstanding rows need a paid model subscription that was not
+available while building this. Every command needed to produce them is written
+out in [docs/TRIALS.md](docs/TRIALS.md). No trial number anywhere in this
+repository is estimated, extrapolated or invented — the rows above say "not yet
+run" because they have not been run.
 
 ## Grading integrity
 

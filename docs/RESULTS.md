@@ -14,7 +14,7 @@ Python 3.12.9 (host), python:3.13-slim-bookworm (both container images)
 ```
 
 Validated against `harbor-framework/terminal-bench-3` at commit
-`405a783ea111ab855718ce93b2b0cadaa2e8d47f` (2026-08-25).
+`c9ffbe1d7d47dab00102e277b08b7815d55ae123` (2026-08-26).
 
 ## What TB3 actually requires
 
@@ -230,7 +230,9 @@ not be run. Self-assessment against the 20 criteria in
 
 ## Outstanding
 
-Blocked on model access; none of it can be faked:
+These require a paid model subscription, which was not available while this
+task was built. Nothing here is estimated or partially reported — the trials
+have not been run, so there are no numbers to give.
 
 - `/run` trials: codex `gpt-5.6-sol` at `reasoning_effort=xhigh` and
   claude-code `claude-opus-5` at `reasoning_effort=max`, 3 trials each. All six
@@ -238,6 +240,13 @@ Blocked on model access; none of it can be faked:
 - `/cheat` trials: same two configurations, every trial must score 0.
 - `harbor check tasks/bytecode-verifier -r rubrics/task-implementation.toml`.
 - `harbor analyze` over the resulting trajectories.
+
+[TRIALS.md](TRIALS.md) is the exact procedure: every command with the flags
+from `.github/harbor-run-defaults.yml`, how to separate a genuine model failure
+from an infrastructure one, and which files to keep as evidence. Both trial
+commands were checked with `harbor run --print-config`, which resolves the job
+configuration and exits without contacting a model, so the flags are known to
+be correct even though the trials have not run.
 
 ## Predicted failure modes
 
