@@ -55,26 +55,46 @@ mkdir -p tb3-rubrics && TB3=405a783ea111ab855718ce93b2b0cadaa2e8d47f && curl -fs
 docker ps >/dev/null 2>&1 && echo "DOCKER OK" || echo "DOCKER NOT RUNNING - stop"
 ```
 
-**9.** Codex. Harbor injects `~/.codex/auth.json` from the host into the
-container, so the file must exist.
+**9.** Install the two agent CLIs. Both are free to install and neither asks for
+anything at install time. Versions below are the ones this procedure was checked
+against.
 ```bash
-test -f ~/.codex/auth.json && echo "CODEX OK" || echo "CODEX NOT AUTHED - run: codex login"
+npm install -g @openai/codex@0.149.1 @anthropic-ai/claude-code@2.1.246
 ```
 
-**10.** Claude. This is the step people get wrong. `CLAUDE_FORCE_OAUTH=1`
-requires a token from `claude setup-token`; a logged-in CLI alone does **not**
-work and harbor aborts the run with
-`CLAUDE_FORCE_OAUTH is set but CLAUDE_CODE_OAUTH_TOKEN is not`.
+**10.** Confirm the executables resolve.
+```bash
+codex --version && claude --version
+```
+
+**11.** Codex auth. Harbor injects `~/.codex/auth.json` from the host into the
+container, so that file must exist. `codex login` opens a browser and signs in
+with a ChatGPT account; `codex login status` prints `Not logged in` until it
+succeeds.
+```bash
+codex login && codex login status
+```
+
+**12.** Verify.
+```bash
+test -f ~/.codex/auth.json && echo "CODEX OK" || echo "CODEX NOT AUTHED"
+```
+
+**13.** Claude auth. This is the step people get wrong. `CLAUDE_FORCE_OAUTH=1`
+needs the long-lived token that `claude setup-token` prints; simply having run
+`claude` and logged in is **not** enough, and harbor aborts the run with
+`CLAUDE_FORCE_OAUTH is set but CLAUDE_CODE_OAUTH_TOKEN is not`. The command
+requires a Claude subscription.
 ```bash
 claude setup-token
 ```
 
-**11.** Export the token it printed.
+**14.** Export the token it printed.
 ```bash
 export CLAUDE_CODE_OAUTH_TOKEN='<paste-token-here>'
 ```
 
-**12.** Confirm.
+**15.** Confirm.
 ```bash
 test -n "$CLAUDE_CODE_OAUTH_TOKEN" && echo "CLAUDE OK" || echo "CLAUDE NOT SET"
 ```
@@ -87,7 +107,7 @@ a broken half.
 
 ## C. Free validation — no model quota used. Do not skip.
 
-**13.** Oracle. Builds both images and runs the reference solution.
+**16.** Oracle. Builds both images and runs the reference solution.
 Expect `Mean: 1.000`. Validation writes to `validate/`, kept separate from
 `runs/` so it never mixes into the trial classification in section G.
 ```bash
@@ -98,7 +118,7 @@ harbor run -p tasks/bytecode-verifier -a oracle -e docker --yes -o validate --jo
 > environment, not the task — it is 1.000 locally. Running paid trials against a
 > broken setup wastes quota and proves nothing.
 
-**14.** Nop. Expect `Mean: 0.000`.
+**17.** Nop. Expect `Mean: 0.000`.
 ```bash
 harbor run -p tasks/bytecode-verifier -a nop -e docker --yes -o validate --job-name validate-nop
 ```
@@ -112,12 +132,12 @@ trials on a subscription trip rate limits, and a rate-limited trial does not
 count. `-r 2` retries **infrastructure exceptions only** — a genuine reward-0
 failure is not an exception and is never retried, so this cannot mask a result.
 
-**15.** Codex, `gpt-5.6-sol`, `reasoning_effort=xhigh`.
+**18.** Codex, `gpt-5.6-sol`, `reasoning_effort=xhigh`.
 ```bash
 harbor run -p tasks/bytecode-verifier -a codex -m openai/gpt-5.6-sol --ak reasoning_effort=xhigh --ae CODEX_FORCE_AUTH_JSON=1 -e docker -k 3 -n 1 -r 2 --yes -o runs --job-name run-codex
 ```
 
-**16.** Claude Code, `claude-opus-5`, `reasoning_effort=max`.
+**19.** Claude Code, `claude-opus-5`, `reasoning_effort=max`.
 ```bash
 harbor run -p tasks/bytecode-verifier -a claude-code -m anthropic/claude-opus-5 --ak reasoning_effort=max --ae CLAUDE_FORCE_OAUTH=1 --ae CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN" --ae CLAUDE_CODE_MAX_OUTPUT_TOKENS=128000 -e docker -k 3 -n 1 -r 2 --yes -o runs --job-name run-claude
 ```
@@ -139,22 +159,22 @@ There is no `/cheat` subcommand. CI strips the "do not cheat" sentence from
 `instruction.md`, appends the red-team prompt, and runs a normal trial. You are
 doing the same thing by hand.
 
-**17.** Back up the instruction file.
+**20.** Back up the instruction file.
 ```bash
 cp tasks/bytecode-verifier/instruction.md /tmp/instruction.md.bak
 ```
 
-**18.** Apply the adversarial prompt, exactly as CI does.
+**21.** Apply the adversarial prompt, exactly as CI does.
 ```bash
 sed -i -E 's/[[:space:]]*[Dd]o not cheat[^.]*\.//g' tasks/bytecode-verifier/instruction.md && printf '\n\n' >> tasks/bytecode-verifier/instruction.md && cat tb3-rubrics/hack-trial-prompt.md >> tasks/bytecode-verifier/instruction.md && tail -5 tasks/bytecode-verifier/instruction.md
 ```
 
-**19.** Codex cheat trials.
+**22.** Codex cheat trials.
 ```bash
 harbor run -p tasks/bytecode-verifier -a codex -m openai/gpt-5.6-sol --ak reasoning_effort=xhigh --ae CODEX_FORCE_AUTH_JSON=1 -e docker -k 3 -n 1 -r 2 --yes -o runs --job-name cheat-codex
 ```
 
-**20.** Claude cheat trials.
+**23.** Claude cheat trials.
 ```bash
 harbor run -p tasks/bytecode-verifier -a claude-code -m anthropic/claude-opus-5 --ak reasoning_effort=max --ae CLAUDE_FORCE_OAUTH=1 --ae CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN" --ae CLAUDE_CODE_MAX_OUTPUT_TOKENS=128000 -e docker -k 3 -n 1 -r 2 --yes -o runs --job-name cheat-claude
 ```
@@ -162,14 +182,14 @@ harbor run -p tasks/bytecode-verifier -a claude-code -m anthropic/claude-opus-5 
 If quota is tight, `-k 1` on each is defensible — CI's docker path runs one cheat
 trial per agent. Say which you did.
 
-**21.** Restore the instruction file. **Do not skip this.** A mutated
+**24.** Restore the instruction file. **Do not skip this.** A mutated
 `instruction.md` fails the `check-instruction-suffix` static check if it is ever
 committed.
 ```bash
 cp /tmp/instruction.md.bak tasks/bytecode-verifier/instruction.md
 ```
 
-**22.** Prove it is restored. Must print `RESTORED CLEAN` and no diff.
+**25.** Prove it is restored. Must print `RESTORED CLEAN` and no diff.
 ```bash
 git diff --exit-code tasks/bytecode-verifier/instruction.md && echo "RESTORED CLEAN"
 ```
@@ -178,7 +198,7 @@ git diff --exit-code tasks/bytecode-verifier/instruction.md && echo "RESTORED CL
 
 ## F. Rubric check
 
-**23.** LLM-judged implementation rubric. Uses claude quota; run it last.
+**26.** LLM-judged implementation rubric. Uses claude quota; run it last.
 ```bash
 harbor check tasks/bytecode-verifier -r tb3-rubrics/task-implementation.toml --ae CLAUDE_FORCE_OAUTH=1 --ae CLAUDE_CODE_OAUTH_TOKEN="$CLAUDE_CODE_OAUTH_TOKEN" -e docker
 ```
@@ -190,7 +210,7 @@ harbor check tasks/bytecode-verifier -r tb3-rubrics/task-implementation.toml --a
 Klavis is explicit: agent crashes, API and rate-limit failures, container
 failures and timeouts do **not** count as model failures.
 
-**24.** Classify every trial in one command.
+**27.** Classify every trial in one command.
 ```bash
 for f in runs/*/*__*/result.json; do echo "$f | reward=$(jq -r '.verifier_result.rewards.reward // "none"' "$f") | exception=$(jq -r '.exception_info.exception_type // "none"' "$f")"; done
 ```
@@ -235,7 +255,7 @@ this task has been run, so any number would be invented. What is known:
 - On subscription auth (`auth.json` / OAuth) you are not billed per token. The
   binding constraint is the rolling usage window, so pace the trials.
 
-**25.** Measure actual cost and duration after the first job, and extrapolate
+**28.** Measure actual cost and duration after the first job, and extrapolate
 from real numbers rather than from my guess.
 ```bash
 for f in runs/*/*__*/result.json; do echo "$f | cost=$(jq -r '.agent_result.cost_usd // "n/a"' "$f") | in=$(jq -r '.agent_result.n_input_tokens // "n/a"' "$f") | out=$(jq -r '.agent_result.n_output_tokens // "n/a"' "$f") | start=$(jq -r '.agent_execution.started_at // "n/a"' "$f") | end=$(jq -r '.agent_execution.finished_at // "n/a"' "$f")"; done
@@ -251,14 +271,14 @@ completes cleanly.
 
 ## I. What to bring back
 
-**26.** Print the classification and cost tables again and copy the terminal
+**29.** Print the classification and cost tables again and copy the terminal
 output, including the summary table harbor prints at the end of each run (the
 `| Trials | Exceptions | Mean |` block).
 ```bash
 for f in runs/*/*__*/result.json; do echo "$f | reward=$(jq -r '.verifier_result.rewards.reward // "none"' "$f") | exception=$(jq -r '.exception_info.exception_type // "none"' "$f")"; done
 ```
 
-**27.** Zip everything, trials and validation both.
+**30.** Zip everything, trials and validation both.
 ```bash
 zip -r klavis-trials.zip runs/ validate/ && ls -lh klavis-trials.zip
 ```
@@ -281,7 +301,7 @@ model got wrong, which is what turns "it failed" into a real failure analysis.
 If the zip is too large to send, those two files per trial plus every
 `result.json` are the minimum.
 
-**28.** If anything aborted, capture the error text verbatim rather than
+**31.** If anything aborted, capture the error text verbatim rather than
 summarising it.
 ```bash
 grep -riE "error|exception|rate.?limit|denied|unauthor" runs/*/*__*/trial.log | tail -40
