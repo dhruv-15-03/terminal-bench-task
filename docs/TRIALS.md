@@ -43,7 +43,7 @@ git clone https://github.com/dhruv-15-03/terminal-bench-task && cd terminal-benc
 **7.** Fetch the two TB3 files that live outside this repo, pinned to the commit
 the task was validated against.
 ```bash
-mkdir -p tb3-rubrics && TB3=405a783ea111ab855718ce93b2b0cadaa2e8d47f && curl -fsSL -o tb3-rubrics/hack-trial-prompt.md https://raw.githubusercontent.com/harbor-framework/terminal-bench-3/$TB3/rubrics/hack-trial-prompt.md && curl -fsSL -o tb3-rubrics/task-implementation.toml https://raw.githubusercontent.com/harbor-framework/terminal-bench-3/$TB3/rubrics/task-implementation.toml && ls -l tb3-rubrics
+mkdir -p tb3-rubrics && TB3=79e71650f5b6a6ef5bb46a434c7c04d7d99a9480 && curl -fsSL -o tb3-rubrics/hack-trial-prompt.md https://raw.githubusercontent.com/harbor-framework/terminal-bench-3/$TB3/docs/prompts/hack-trial-prompt.md && curl -fsSL -o tb3-rubrics/task-implementation.toml https://raw.githubusercontent.com/harbor-framework/terminal-bench-3/$TB3/docs/prompts/task-implementation.toml && ls -l tb3-rubrics
 ```
 
 ---

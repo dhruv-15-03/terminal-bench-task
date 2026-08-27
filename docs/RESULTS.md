@@ -14,7 +14,7 @@ Python 3.12.9 (host), python:3.13-slim-bookworm (both container images)
 ```
 
 Validated against `harbor-framework/terminal-bench-3` at commit
-`c9ffbe1d7d47dab00102e277b08b7815d55ae123` (2026-08-26).
+`79e71650f5b6a6ef5bb46a434c7c04d7d99a9480` (2026-08-27).
 
 ## What TB3 actually requires
 
@@ -78,7 +78,7 @@ All 22 checks from the `static-checks.yml` workflow, run against this task with
 the upstream scripts unmodified:
 
 ```
-for check in checks/check-*.sh; do bash "$check" tasks/bytecode-verifier; done
+for check in scripts/checks/check-*.sh; do bash "$check" tasks/bytecode-verifier; done
 ```
 
 ```

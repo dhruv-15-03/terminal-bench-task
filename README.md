@@ -50,7 +50,7 @@ daemon. The static checks come from the terminal-bench-3 repository, so run
 them from a checkout of it with this task copied into `tasks/`.
 
 ```bash
-for check in checks/check-*.sh; do bash "$check" tasks/bytecode-verifier; done
+for check in scripts/checks/check-*.sh; do bash "$check" tasks/bytecode-verifier; done
 
 harbor check tasks/bytecode-verifier -r rubrics/task-implementation.toml
 
@@ -75,7 +75,7 @@ and the failure analysis.
 | implementation rubric | not yet run |
 
 Validated against `harbor-framework/terminal-bench-3` at
-`c9ffbe1`, with harbor 0.22.0.
+`79e7165`, with harbor 0.22.0.
 
 The three outstanding rows need a paid model subscription that was not
 available while building this. Every command needed to produce them is written
