@@ -60,8 +60,12 @@ harbor run -p tasks/bytecode-verifier --agent nop      # expects reward 0.0
 
 ## Results
 
+**This task does not meet the assignment's difficulty requirement. Read this
+section before the rest of the repository.**
+
 [docs/RESULTS.md](docs/RESULTS.md) has the commands actually run, their output,
-and the failure analysis.
+the clean-room methodology, and the analysis of why the task turned out
+solvable.
 
 | stage | result |
 |---|---|
@@ -69,19 +73,33 @@ and the failure analysis.
 | Docker build, both images | pass |
 | oracle validation | reward 1.0 |
 | nop validation | reward 0.0 |
-| anti-cheat probes | 6/6 score 0 |
-| `/run` agent trials | not yet run |
-| `/cheat` agent trials | not yet run |
-| implementation rubric | not yet run |
+| anti-cheat probes (local, not `/cheat`) | 6/6 score 0 |
+| `/run` agent trials | official Harbor trials not run; separate clean-room implementations by `gpt-5.6-sol` and `claude-opus-5` each scored 69/69, reward 1.0 |
+| `/cheat` agent trials | official Harbor trials not run |
+| implementation rubric | not run |
 
 Validated against `harbor-framework/terminal-bench-3` at
 `79e7165`, with harbor 0.22.0.
 
-The three outstanding rows need a paid model subscription that was not
-available while building this. Every command needed to produce them is written
-out in [docs/TRIALS.md](docs/TRIALS.md). No trial number anywhere in this
-repository is estimated, extrapolated or invented — the rows above say "not yet
-run" because they have not been run.
+The official Harbor trials and the rubric check were not run, because usable
+model credentials were not available. Separately from Harbor, both target models
+were given the task under clean-room conditions — the instruction, the
+specification, the public samples and the tools, with no reference solution and
+no hidden corpus — and both produced a fully correct verifier, scoring 69/69 for
+a reward of 1.0. The assignment requires a task that all trials fail. On this
+evidence the submitted task **fails that difficulty gate**, and reporting it is
+more useful than submitting the task as though the question were still open.
+
+Two things this does not claim. The clean-room runs are not Harbor trials: they
+were not run through the harness, not scored by it, and are not a substitute for
+the six official `/run` trials. The local anti-cheat probes are likewise not
+`/cheat` trials — they test the grading design, not model behaviour under the
+adversarial prompt.
+
+No trial number anywhere in this repository is estimated, extrapolated or
+invented. [docs/RESULTS.md](docs/RESULTS.md) has the exact methodology and the
+failure analysis; [docs/TRIALS.md](docs/TRIALS.md) has the commands to reproduce
+the official trials.
 
 ## Grading integrity
 
